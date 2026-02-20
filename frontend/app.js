@@ -1,5 +1,10 @@
 /* ─── Atmos Weather — Shared Utilities ─── */
-const API = '/api';
+// Auto-detect: local file → localhost backend, otherwise relative /api
+const API = window.location.protocol === 'file:'
+    ? 'http://127.0.0.1:8001/api'
+    : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? `${window.location.origin}/api`
+        : '/api';
 const $ = (id) => document.getElementById(id);
 let metric = true;
 
