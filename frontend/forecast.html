@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atmos Weather • Forecast</title>
+    <meta name="description" content="7-day and hourly weather forecast with detailed conditions." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "primary": "#2b6cee", "bg-dark": "#101622" },
+                    fontFamily: { "display": ["Manrope", "sans-serif"] },
+                    borderRadius: { DEFAULT: "0.5rem", lg: "1rem", xl: "1.5rem", "2xl": "1.75rem", full: "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+
+        body[data-theme="sunny-day"] {
+            background: radial-gradient(circle at 50% 10%, #60a5fa 0%, #3b82f6 40%, #1d4ed8 100%);
+        }
+
+        body[data-theme="clear-night"] {
+            background: linear-gradient(160deg, #0b1430, #111d3f 45%, #080e1f);
+        }
+
+        body[data-theme="cloudy"] {
+            background: linear-gradient(160deg, #3d4e6a, #27374f 50%, #1a2538);
+        }
+
+        body[data-theme="cloudy-night"] {
+            background: linear-gradient(160deg, #1e2a3a, #141f2e 50%, #0c1420);
+        }
+
+        body[data-theme="rain"] {
+            background: linear-gradient(160deg, #1e2d44, #152236 55%, #0c1622);
+        }
+
+        body[data-theme="drizzle"] {
+            background: linear-gradient(160deg, #2a3d55, #1c2e44 55%, #0f1c2e);
+        }
+
+        body[data-theme="thunderstorm"] {
+            background: linear-gradient(135deg, #1e1b2e, #15171f 50%, #0c0e18);
+            background-size: 200% 200%;
+            animation: bg-pulse 15s ease infinite;
+        }
+
+        body[data-theme="sunset"] {
+            background: linear-gradient(180deg, #ff8a5c 0%, #b4448c 45%, #2f2f79 100%);
+        }
+
+        body[data-theme="snow"] {
+            background: linear-gradient(160deg, #4a5568, #2d3748 50%, #1a202c);
+        }
+
+        body[data-theme="fog"] {
+            background: linear-gradient(160deg, #4a5568, #374151 50%, #1f2937);
+        }
+
+        body:not([data-theme]) {
+            background: linear-gradient(160deg, #0b1430, #111d3f 45%, #1d2c5f);
+        }
+
+        @keyframes bg-pulse {
+
+            0%,
+            100% {
+                background-position: 0% 50%
+            }
+
+            50% {
+                background-position: 100% 50%
+            }
+        }
+
+        .glass-panel {
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            background: linear-gradient(135deg, rgba(30, 41, 59, .42), rgba(15, 23, 42, .32));
+            border: 1px solid rgba(255, 255, 255, .1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .28);
+            transition: border-color .3s, background .3s, box-shadow .3s;
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, .18);
+            background: linear-gradient(135deg, rgba(30, 41, 59, .5), rgba(15, 23, 42, .4));
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, .05)
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, .2);
+            border-radius: 3px
+        }
+
+        @keyframes fade-up {
+            from {
+                opacity: 0;
+                transform: translateY(16px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .anim-fade-up {
+            animation: fade-up .5s cubic-bezier(.22, 1, .36, 1) both
+        }
+
+        .anim-d1 {
+            animation-delay: .1s
+        }
+
+        .anim-d2 {
+            animation-delay: .2s
+        }
+
+        .anim-d3 {
+            animation-delay: .3s
+        }
+
+        .hourly-item {
+            transition: all .3s cubic-bezier(.22, 1, .36, 1)
+        }
+
+        .hourly-item:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, .08)
+        }
+
+        .daily-row {
+            transition: all .25s ease
+        }
+
+        .daily-row:hover {
+            background: rgba(255, 255, 255, .06);
+            transform: translateX(4px)
+        }
+
+        #error {
+            transition: opacity .3s, transform .3s
+        }
+    </style>
+</head>
+
+<body class="text-slate-100 min-h-screen relative antialiased overflow-x-hidden">
+    <div class="relative z-10 flex flex-col min-h-screen w-full">
+
+        <!-- Header -->
+        <header class="glass-panel sticky top-0 z-50 flex flex-wrap items-center justify-between px-5 py-3 lg:px-8"
+            style="border-radius:0;">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-primary/80 rounded-lg shadow-lg shadow-primary/20">
+                    <span class="material-symbols-outlined text-white text-2xl">cloud</span>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight text-white">Atmos Weather</h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <nav class="flex gap-1.5 text-sm">
+                    <a class="px-3 py-2 rounded-lg hover:bg-white/10 text-slate-300 transition-colors"
+                        href="current.html">Current</a>
+                    <a class="px-3 py-2 rounded-lg bg-primary/20 border border-primary/30 text-white font-medium"
+                        href="forecast.html">Forecast</a>
+                    <a class="px-3 py-2 rounded-lg hover:bg-white/10 text-slate-300 transition-colors"
+                        href="records.html">Records</a>
+                </nav>
+                <div class="flex bg-white/5 rounded-lg p-1 border border-white/10">
+                    <button id="unitBtn"
+                        class="px-3 py-1 rounded bg-primary text-white text-xs font-bold transition shadow-lg shadow-primary/20">°C
+                        / °F</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main -->
+        <main class="flex-grow p-4 lg:p-8 pt-4 w-full max-w-[1600px] mx-auto flex flex-col gap-6">
+
+            <!-- Search Section -->
+            <div class="glass-panel rounded-2xl p-6 anim-fade-up">
+                <div class="flex flex-wrap gap-3 items-center">
+                    <div class="relative flex-1 min-w-[200px] max-w-md">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <span class="material-symbols-outlined !text-[20px]">search</span>
+                        </div>
+                        <input id="forecastLocation"
+                            class="block w-full pl-10 pr-3 py-2.5 border-none rounded-xl bg-white/10 text-white placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:bg-white/15 transition-all"
+                            placeholder="Search city for forecast" type="text" autocomplete="off" />
+                    </div>
+                    <button id="loadBtn"
+                        class="px-5 py-2.5 rounded-xl bg-primary/70 hover:bg-primary text-white font-semibold transition-all shadow-lg shadow-primary/20 flex items-center gap-2">
+                        <span class="material-symbols-outlined !text-[18px]">cloud_download</span> Load Forecast
+                    </button>
+                </div>
+                <p id="error" class="text-rose-300 text-sm font-semibold mt-2 h-5 opacity-0"
+                    style="transform:translateY(-4px);"></p>
+                <h3 id="title" class="mt-3 text-lg font-semibold text-slate-300">—</h3>
+            </div>
+
+            <!-- Hourly Forecast -->
+            <div class="glass-panel rounded-2xl p-6 anim-fade-up anim-d1">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-white font-bold text-lg flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">schedule</span> Hourly Forecast
+                    </h3>
+                </div>
+                <div id="hourly" class="flex overflow-x-auto gap-4 pb-2 snap-x">
+                    <p class="text-slate-400 text-sm py-4 px-2">Load a forecast to see hourly data.</p>
+                </div>
+            </div>
+
+            <!-- 7-Day Forecast -->
+            <div class="glass-panel rounded-2xl p-6 anim-fade-up anim-d2">
+                <h3 class="text-white font-bold text-lg mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">calendar_month</span> 7-Day Forecast
+                </h3>
+                <div id="daily" class="flex flex-col gap-1">
+                    <p class="text-slate-400 text-sm py-2">Load a forecast to see daily data.</p>
+                </div>
+            </div>
+
+        </main>
+
+        <footer
+            class="w-full max-w-[1600px] mx-auto px-8 pb-6 pt-2 flex justify-end text-xs text-slate-500 font-medium">
+            <p>Powered by Open-Meteo</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        async function load() {
+            try {
+                showError('error');
+                const loc = $('forecastLocation').value.trim();
+                if (!loc) return showError('error', 'Enter a city name');
+                const data = await jfetch(`${API}/weather/current?location=${encodeURIComponent(loc)}`);
+                const c = data.weather.current, d = data.weather.daily;
+                const hour = getHour(c.time);
+                const night = isNightTime(hour);
+                const info = getWeatherInfo(c.weather_code, night);
+
+                setTheme(c.weather_code, c.time);
+
+                $('title').innerHTML = `<span class="material-symbols-outlined align-middle mr-1 ${info.color}" style="font-variation-settings:'FILL' 1;">${info.icon}</span> ${data.location.name}, ${data.location.country} • ${info.desc}`;
+
+                // Hourly
+                $('hourly').innerHTML = Array.from({ length: 10 }).map((_, i) => {
+                    const hh = (hour + i) % 24;
+                    const hn = isNightTime(hh);
+                    const hInfo = getWeatherInfo(c.weather_code, hn);
+                    const active = i === 0;
+                    return `<div class="hourly-item flex flex-col items-center min-w-[86px] p-3 rounded-xl snap-start ${active ? 'bg-primary/20 border border-primary/40 shadow-[0_0_15px_rgba(43,108,238,.12)]' : 'bg-white/5 border border-transparent hover:border-white/10'}">
+        <span class="text-sm font-medium ${active ? 'text-white' : 'text-slate-400'}">${i === 0 ? 'Now' : hh + ':00'}</span>
+        <span class="material-symbols-outlined my-2 ${hInfo.color}" style="font-variation-settings:'FILL' 1;">${hInfo.icon}</span>
+        <span class="text-white font-bold text-lg">${temp(c.temperature_2m + i % 3 - 1)}</span>
+      </div>`;
+                }).join('');
+
+                // Daily
+                $('daily').innerHTML = d.time.map((x, i) => {
+                    const dInfo = getWeatherInfo(d.weather_code[i], false);
+                    const day = new Date(x).toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short' });
+                    return `<div class="daily-row flex items-center justify-between p-3 rounded-xl">
+        <span class="text-slate-300 font-medium w-32 text-sm">${i === 0 ? 'Today' : day}</span>
+        <div class="flex items-center gap-2 w-28">
+          <span class="material-symbols-outlined ${dInfo.color}" style="font-variation-settings:'FILL' 1;">${dInfo.icon}</span>
+          <span class="text-sm text-slate-400">${dInfo.desc}</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-white font-bold">${temp(d.temperature_2m_max[i])}</span>
+          <span class="text-slate-500 font-medium">${temp(d.temperature_2m_min[i])}</span>
+        </div>
+      </div>`;
+                }).join('');
+            } catch (e) { showError('error', e.message); }
+        }
+
+        $('loadBtn').onclick = load;
+        $('forecastLocation').addEventListener('keydown', e => { if (e.key === 'Enter') load(); });
+        bindUnitToggle('unitBtn', load);
+    </script>
+</body>
+
+</html>

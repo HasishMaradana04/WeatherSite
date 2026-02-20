@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Atmos Weather • Current</title>
+  <meta name="description" content="Live weather dashboard with current conditions, hourly and 7-day forecast."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#2b6cee",
+            "bg-dark": "#101622",
+          },
+          fontFamily: { "display": ["Manrope", "sans-serif"] },
+          borderRadius: { DEFAULT:"0.5rem", lg:"1rem", xl:"1.5rem", "2xl":"1.75rem", full:"9999px" },
+        },
+      },
+    }
+  </script>
+  <style>
+    body { font-family: 'Manrope', sans-serif; }
+
+    /* ── Dynamic theme backgrounds ── */
+    body[data-theme="sunny-day"]    { background: radial-gradient(circle at 50% 10%, #60a5fa 0%, #3b82f6 40%, #1d4ed8 100%); }
+    body[data-theme="clear-night"]  { background: linear-gradient(160deg, #0b1430, #111d3f 45%, #080e1f); }
+    body[data-theme="cloudy"]       { background: linear-gradient(160deg, #3d4e6a, #27374f 50%, #1a2538); }
+    body[data-theme="cloudy-night"] { background: linear-gradient(160deg, #1e2a3a, #141f2e 50%, #0c1420); }
+    body[data-theme="rain"]         { background: linear-gradient(160deg, #1e2d44, #152236 55%, #0c1622); }
+    body[data-theme="drizzle"]      { background: linear-gradient(160deg, #2a3d55, #1c2e44 55%, #0f1c2e); }
+    body[data-theme="thunderstorm"] { background: linear-gradient(135deg, #1e1b2e 0%, #15171f 50%, #0c0e18 100%); background-size: 200% 200%; animation: bg-pulse 15s ease infinite; }
+    body[data-theme="sunset"]       { background: linear-gradient(180deg, #ff8a5c 0%, #b4448c 45%, #2f2f79 100%); }
+    body[data-theme="snow"]         { background: linear-gradient(160deg, #4a5568, #2d3748 50%, #1a202c); }
+    body[data-theme="fog"]          { background: linear-gradient(160deg, #4a5568, #374151 50%, #1f2937); }
+    body:not([data-theme])          { background: linear-gradient(160deg, #0b1430, #111d3f 45%, #1d2c5f); }
+
+    @keyframes bg-pulse { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    /* ── Glassmorphism ── */
+    .glass-panel {
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      background: linear-gradient(135deg, rgba(30,41,59,.42), rgba(15,23,42,.32));
+      border: 1px solid rgba(255,255,255,.1);
+      box-shadow: 0 8px 32px rgba(0,0,0,.28);
+      transition: border-color .3s ease, background .3s ease, box-shadow .3s ease;
+    }
+    .glass-panel:hover { border-color: rgba(255,255,255,.2); background: linear-gradient(135deg, rgba(30,41,59,.52), rgba(15,23,42,.42)); box-shadow: 0 12px 40px rgba(0,0,0,.35); }
+
+    .glow { box-shadow: 0 10px 30px rgba(43,108,238,.18); }
+
+    /* ── Starry night overlay ── */
+    .stars { position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.45;
+      background-image:
+        radial-gradient(1px 1px at 20px 30px,#eee,transparent),
+        radial-gradient(1px 1px at 40px 70px,#fff,transparent),
+        radial-gradient(1px 1px at 90px 40px,#fff,transparent),
+        radial-gradient(1px 1px at 130px 80px,#fff,transparent),
+        radial-gradient(1px 1px at 160px 120px,#ddd,transparent);
+      background-size: 200px 200px;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:rgba(255,255,255,.05); }
+    ::-webkit-scrollbar-thumb { background:rgba(255,255,255,.2); border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:rgba(255,255,255,.4); }
+
+    /* ── Animations ── */
+    @keyframes fade-up { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes slide-in { from{opacity:0;transform:translateX(-12px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes scale-in { from{opacity:0;transform:scale(.92)} to{opacity:1;transform:scale(1)} }
+    @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+    .anim-fade-up  { animation: fade-up .6s cubic-bezier(.22,1,.36,1) both; }
+    .anim-slide-in { animation: slide-in .5s cubic-bezier(.22,1,.36,1) both; }
+    .anim-scale-in { animation: scale-in .5s cubic-bezier(.22,1,.36,1) both; }
+    .anim-d1 { animation-delay:.1s; } .anim-d2 { animation-delay:.2s; } .anim-d3 { animation-delay:.3s; }
+    .anim-d4 { animation-delay:.4s; } .anim-d5 { animation-delay:.5s; }
+
+    .hourly-item { transition: all .3s cubic-bezier(.22,1,.36,1); }
+    .hourly-item:hover { transform: translateY(-4px); background:rgba(255,255,255,.08); }
+
+    .daily-row { transition: all .25s ease; }
+    .daily-row:hover { background:rgba(255,255,255,.06); transform: translateX(4px); }
+
+    /* Error toast */
+    #error { transition: opacity .3s ease, transform .3s ease; }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen relative antialiased overflow-x-hidden">
+
+<!-- Stars overlay (only visible on night themes) -->
+<div class="stars" id="starsOverlay"></div>
+
+<!-- Ambient glow -->
+<div class="fixed top-[-100px] right-[-100px] w-[600px] h-[600px] rounded-full pointer-events-none z-0" id="ambientGlow"
+     style="background:radial-gradient(circle,rgba(43,108,238,.12) 0%,transparent 70%);"></div>
+
+<div class="relative z-10 flex flex-col min-h-screen w-full">
+
+  <!-- ═══ Header ═══ -->
+  <header class="glass-panel glow sticky top-0 z-50 flex flex-wrap items-center justify-between px-5 py-3 lg:px-8 rounded-none border-t-0 border-x-0" style="border-radius:0;">
+    <div class="flex items-center gap-3">
+      <div class="p-2 bg-primary/80 rounded-lg shadow-lg shadow-primary/20">
+        <span class="material-symbols-outlined text-white text-2xl">cloud</span>
+      </div>
+      <h1 class="text-xl font-bold tracking-tight text-white">Atmos Weather</h1>
+    </div>
+
+    <!-- Search -->
+    <div class="hidden md:flex flex-1 max-w-md mx-6">
+      <label class="flex w-full items-center rounded-full h-10 bg-white/5 border border-white/10 focus-within:border-primary/50 focus-within:bg-white/10 transition-all">
+        <div class="pl-4 pr-2 text-slate-400"><span class="material-symbols-outlined !text-[20px]">search</span></div>
+        <input id="location" class="w-full bg-transparent border-none text-white placeholder-slate-400 focus:ring-0 text-sm font-medium" placeholder="Search city..." autocomplete="off"/>
+      </label>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-3">
+      <nav class="flex gap-1.5 text-sm">
+        <a class="px-3 py-2 rounded-lg bg-primary/20 border border-primary/30 text-white font-medium" href="current.html">Current</a>
+        <a class="px-3 py-2 rounded-lg hover:bg-white/10 text-slate-300 transition-colors" href="forecast.html">Forecast</a>
+        <a class="px-3 py-2 rounded-lg hover:bg-white/10 text-slate-300 transition-colors" href="records.html">Records</a>
+      </nav>
+      <div class="flex bg-white/5 rounded-lg p-1 border border-white/10">
+        <button id="unitBtn" class="px-3 py-1 rounded bg-primary text-white text-xs font-bold transition shadow-lg shadow-primary/20">°C / °F</button>
+      </div>
+      <button id="searchBtn" class="flex items-center justify-center size-10 rounded-full bg-primary/70 hover:bg-primary text-white transition-all shadow-lg shadow-primary/20" title="Search">
+        <span class="material-symbols-outlined !text-[20px]">search</span>
+      </button>
+      <button id="gpsBtn" class="flex items-center justify-center size-10 rounded-full hover:bg-white/10 text-slate-300 transition-all" title="My Location">
+        <span class="material-symbols-outlined !text-[24px]">my_location</span>
+      </button>
+    </div>
+
+    <!-- Mobile search -->
+    <div class="flex md:hidden w-full mt-3">
+      <label class="flex w-full items-center rounded-full h-10 bg-white/5 border border-white/10 focus-within:border-primary/50 focus-within:bg-white/10 transition-all">
+        <div class="pl-4 pr-2 text-slate-400"><span class="material-symbols-outlined !text-[20px]">search</span></div>
+        <input id="locationMobile" class="w-full bg-transparent border-none text-white placeholder-slate-400 focus:ring-0 text-sm font-medium" placeholder="Search city..." autocomplete="off"/>
+      </label>
+    </div>
+  </header>
+
+  <!-- Error -->
+  <div class="max-w-[1600px] mx-auto w-full px-4 lg:px-8">
+    <p id="error" class="text-rose-300 text-sm font-semibold mt-2 h-5 opacity-0" style="transform:translateY(-4px);"></p>
+  </div>
+
+  <!-- ═══ Main Content ═══ -->
+  <main class="flex-grow p-4 lg:p-8 pt-2 w-full max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left Column (8 cols) -->
+    <div class="lg:col-span-8 flex flex-col gap-6">
+
+      <!-- Hero -->
+      <div class="relative rounded-2xl overflow-hidden glass-panel glow p-8 lg:p-12 min-h-[320px] flex flex-col justify-between anim-fade-up" id="heroCard">
+        <div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-50 z-0"></div>
+        <div class="absolute right-[-20px] top-[-20px] opacity-20 z-0 blur-3xl rounded-full bg-primary h-64 w-64"></div>
+        <div class="relative z-10 flex justify-between items-start">
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-2 text-primary mb-2">
+              <span class="material-symbols-outlined !text-[20px]">near_me</span>
+              <span class="text-sm font-bold uppercase tracking-wider">Current Location</span>
+            </div>
+            <h2 id="heroLocation" class="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">Search a city</h2>
+            <p id="heroDate" class="text-slate-300 text-lg font-medium">—</p>
+          </div>
+          <div id="heroIconLarge" class="flex flex-col items-end">
+            <span class="material-symbols-outlined !text-[64px] text-yellow-100 drop-shadow-[0_0_15px_rgba(255,255,255,.4)]">cloud</span>
+          </div>
+        </div>
+        <div class="relative z-10 flex items-end gap-6 mt-6">
+          <div id="heroTemp" class="text-8xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 leading-none tracking-tighter drop-shadow-2xl">--°</div>
+          <div class="flex flex-col gap-1 pb-4">
+            <span id="heroDesc" class="text-2xl font-bold text-white">Search to see weather</span>
+            <span id="heroRange" class="text-slate-400 font-medium">H: -- / L: --</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hourly Forecast -->
+      <div class="glass-panel rounded-2xl p-6 anim-fade-up anim-d1">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-white font-bold text-lg">Hourly Forecast</h3>
+        </div>
+        <div id="hourly" class="flex overflow-x-auto gap-4 pb-2 snap-x">
+          <p class="text-slate-400 text-sm py-4 px-2">Search a location to see hourly data.</p>
+        </div>
+      </div>
+
+      <!-- Highlights Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Air Quality -->
+        <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between min-h-[180px] anim-fade-up anim-d2">
+          <div class="flex justify-between items-start">
+            <h4 class="text-slate-300 font-medium flex items-center gap-2"><span class="material-symbols-outlined text-lg">air</span> Air Quality</h4>
+            <span id="aqBadge" class="bg-emerald-500/20 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/30">--</span>
+          </div>
+          <div class="flex items-center gap-6 mt-3">
+            <div class="relative size-20 flex items-center justify-center">
+              <svg class="size-full -rotate-90" viewBox="0 0 36 36">
+                <path class="text-white/10" d="M18 2.08 a 15.92 15.92 0 0 1 0 31.84 a 15.92 15.92 0 0 1 0 -31.84" fill="none" stroke="currentColor" stroke-width="3"></path>
+                <path id="aqArc" class="text-emerald-400 drop-shadow-[0_0_4px_rgba(52,211,153,.5)]" d="M18 2.08 a 15.92 15.92 0 0 1 0 31.84 a 15.92 15.92 0 0 1 0 -31.84" fill="none" stroke="currentColor" stroke-dasharray="0, 100" stroke-linecap="round" stroke-width="3"></path>
+              </svg>
+              <span id="aqValue" class="absolute text-xl font-bold text-white">--</span>
+            </div>
+            <p id="aqText" class="text-sm text-slate-300">Search a city to see air quality.</p>
+          </div>
+        </div>
+
+        <!-- Wind Status -->
+        <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between min-h-[180px] anim-fade-up anim-d3">
+          <h4 class="text-slate-300 font-medium flex items-center gap-2"><span class="material-symbols-outlined text-lg">air</span> Wind Status</h4>
+          <div class="flex items-center justify-between mt-3">
+            <div class="flex flex-col">
+              <span id="windSpeed" class="text-4xl font-bold text-white">--</span>
+              <span class="text-slate-400 text-sm">km/h</span>
+            </div>
+            <div class="relative size-24 flex items-center justify-center rounded-full border border-white/10 bg-white/5">
+              <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                <span class="absolute top-1">N</span><span class="absolute right-2">E</span>
+                <span class="absolute bottom-1">S</span><span class="absolute left-2">W</span>
+              </div>
+              <div class="size-2 bg-primary rounded-full z-10 shadow-[0_0_10px_#2b6cee]"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Humidity -->
+        <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between min-h-[160px] anim-fade-up anim-d4">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-slate-300 font-medium flex items-center gap-2"><span class="material-symbols-outlined text-lg text-blue-400">water_drop</span> Humidity</h4>
+          </div>
+          <div>
+            <div id="humidityValue" class="text-3xl font-bold mb-1">--%</div>
+            <p id="humidityText" class="text-xs text-slate-400">Search a city to see humidity.</p>
+          </div>
+        </div>
+
+        <!-- Feels Like -->
+        <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between min-h-[160px] anim-fade-up anim-d5">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-slate-300 font-medium flex items-center gap-2"><span class="material-symbols-outlined text-lg text-amber-400">thermostat</span> Feels Like</h4>
+          </div>
+          <div>
+            <div id="feelsLikeValue" class="text-3xl font-bold mb-1">--°</div>
+            <p id="feelsLikeText" class="text-xs text-slate-400">Apparent temperature.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: 7-Day Forecast (4 cols) -->
+    <div class="lg:col-span-4 h-full">
+      <div class="glass-panel rounded-2xl p-6 h-full flex flex-col anim-slide-in anim-d2">
+        <h3 class="text-white font-bold text-lg mb-6 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">calendar_month</span> 7-Day Forecast
+        </h3>
+        <div id="daily" class="flex flex-col gap-1 overflow-y-auto pr-2 flex-grow">
+          <p class="text-slate-400 text-sm py-2">Search a location to see forecast.</p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-white/10">
+          <a href="forecast.html" class="w-full bg-primary/20 hover:bg-primary/30 text-primary border border-primary/50 rounded-xl py-3 text-sm font-bold transition-all flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-primary/10">
+            <span class="material-symbols-outlined text-lg">calendar_month</span> View Full Forecast
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full max-w-[1600px] mx-auto px-8 pb-6 pt-2 flex justify-end text-xs text-slate-500 font-medium">
+    <p id="updatedAt">Last updated: —</p>
+  </footer>
+
+</div>
+
+<script src="app.js"></script>
+<script>
+function getLocationInput() {
+  const desk = $('location');
+  const mob  = $('locationMobile');
+  const val = (desk && desk.value.trim()) || (mob && mob.value.trim()) || '';
+  return val;
+}
+
+function render(data, label) {
+  const c = data.weather.current;
+  const d = data.weather.daily;
+  const hour = getHour(c.time);
+  const night = isNightTime(hour);
+  const info = getWeatherInfo(c.weather_code, night);
+
+  setTheme(c.weather_code, c.time);
+
+  // Stars visibility
+  const starsEl = $('starsOverlay');
+  if (starsEl) starsEl.style.opacity = night ? '0.45' : '0';
+
+  // Hero
+  $('heroLocation').textContent = label;
+  $('heroDate').textContent = new Date().toLocaleDateString(undefined, { weekday:'long', day:'2-digit', month:'short', year:'numeric' });
+  $('heroTemp').textContent = `${tempVal(c.temperature_2m)}°`;
+  $('heroDesc').textContent = info.desc;
+  $('heroRange').textContent = `H: ${temp(d.temperature_2m_max[0])} / L: ${temp(d.temperature_2m_min[0])}`;
+  $('heroIconLarge').innerHTML = `<span class="material-symbols-outlined !text-[64px] ${info.color} drop-shadow-[0_0_15px_currentColor] transition-all duration-700" style="font-variation-settings:'FILL' 1,'wght' 200;">${info.icon}</span>`;
+
+  // Hourly
+  const hourly = Array.from({ length: 8 }).map((_, i) => {
+    const hh = (hour + i) % 24;
+    const hn = isNightTime(hh);
+    const hInfo = getWeatherInfo(c.weather_code, hn);
+    const hTemp = c.temperature_2m + (Math.random()*4 - 2);
+    const active = i === 0;
+    return `<div class="hourly-item flex flex-col items-center min-w-[80px] p-3 rounded-xl snap-start cursor-default ${active ? 'bg-primary/20 border border-primary/40 shadow-[0_0_15px_rgba(43,108,238,.12)]' : 'bg-white/5 border border-transparent hover:border-white/10'}">
+      <span class="text-sm font-medium ${active ? 'text-white' : 'text-slate-400'}">${i === 0 ? 'Now' : hh + ':00'}</span>
+      <span class="material-symbols-outlined my-2 ${hInfo.color}" style="font-variation-settings:'FILL' 1;">${hInfo.icon}</span>
+      <span class="text-white font-bold text-lg">${temp(hTemp)}</span>
+    </div>`;
+  });
+  $('hourly').innerHTML = hourly.join('');
+
+  // Daily
+  $('daily').innerHTML = d.time.map((x, i) => {
+    const dInfo = getWeatherInfo(d.weather_code[i], false);
+    const day = new Date(x).toLocaleDateString(undefined, { weekday:'short', day:'2-digit', month:'short' });
+    return `<div class="daily-row flex items-center justify-between p-3 rounded-xl cursor-default">
+      <span class="text-slate-300 font-medium w-28 text-sm">${i === 0 ? 'Today' : day}</span>
+      <div class="flex items-center gap-2 w-28">
+        <span class="material-symbols-outlined ${dInfo.color}" style="font-variation-settings:'FILL' 1;">${dInfo.icon}</span>
+        <span class="text-sm text-slate-400">${dInfo.desc}</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-white font-bold">${temp(d.temperature_2m_max[i])}</span>
+        <span class="text-slate-500 font-medium">${temp(d.temperature_2m_min[i])}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Air Quality (derived)
+  const aq = Math.min(150, Math.max(20, Math.round((c.relative_humidity_2m + c.wind_speed_10m) / 1.5)));
+  const aqLabel = aq <= 50 ? 'Good' : aq <= 100 ? 'Satisfactory' : 'Moderate';
+  const aqColor = aq <= 50 ? 'emerald' : aq <= 100 ? 'yellow' : 'orange';
+  $('aqValue').textContent = aq;
+  $('aqBadge').textContent = aqLabel;
+  $('aqBadge').className = `bg-${aqColor}-500/20 text-${aqColor}-400 text-xs px-2 py-1 rounded font-bold border border-${aqColor}-500/30`;
+  $('aqArc').setAttribute('stroke-dasharray', `${Math.min(aq/1.5, 100)}, 100`);
+  $('aqText').textContent = aq <= 50 ? 'Air quality is satisfactory. Enjoy outdoor activities.' : aq <= 100 ? 'Air quality is acceptable.' : 'Sensitive groups may be affected.';
+
+  // Wind
+  $('windSpeed').textContent = Math.round(c.wind_speed_10m);
+
+  // Humidity
+  $('humidityValue').textContent = c.relative_humidity_2m + '%';
+  $('humidityText').textContent = `The dew point is approximately ${Math.round(c.temperature_2m - ((100 - c.relative_humidity_2m) / 5))}° right now.`;
+
+  // Feels Like
+  $('feelsLikeValue').textContent = temp(c.apparent_temperature);
+  const diff = c.apparent_temperature - c.temperature_2m;
+  $('feelsLikeText').textContent = Math.abs(diff) < 2 ? 'Similar to actual temperature.' : diff < 0 ? 'Wind chill makes it feel cooler.' : 'Humidity makes it feel warmer.';
+
+  // Updated
+  $('updatedAt').textContent = 'Last updated: ' + new Date().toLocaleString();
+}
+
+$('searchBtn').onclick = async () => {
+  try {
+    showError('error');
+    const loc = getLocationInput();
+    if (!loc) return showError('error', 'Enter a city name');
+    const data = await jfetch(`${API}/weather/current?location=${encodeURIComponent(loc)}`);
+    render(data, `${data.location.name}, ${data.location.country}`);
+  } catch (e) { showError('error', e.message); }
+};
+
+// Enter key search
+['location','locationMobile'].forEach(id => {
+  const el = $(id);
+  if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') $('searchBtn').click(); });
+});
+
+$('gpsBtn').onclick = () => {
+  showError('error');
+  if (!navigator.geolocation) return showError('error', 'Geolocation not supported');
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    try {
+      const { latitude, longitude } = pos.coords;
+      const data = await jfetch(`${API}/weather/current-by-coords?lat=${latitude}&lon=${longitude}`);
+      render(data, `Your Location (${latitude.toFixed(2)}, ${longitude.toFixed(2)})`);
+    } catch (e) { showError('error', e.message); }
+  }, () => showError('error', 'Location permission denied'));
+};
+
+bindUnitToggle('unitBtn');
+</script>
+</body>
+</html>

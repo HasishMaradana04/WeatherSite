@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Thunderstorm Weather Dashboard</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b6cee",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "glass-surface": "rgba(30, 35, 50, 0.45)",
+                        "glass-border": "rgba(255, 255, 255, 0.1)",
+                        "violet-storm": "#2e2a40",
+                        "charcoal-storm": "#1a1c24"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "full": "9999px"
+                    },
+                    backgroundImage: {
+                        'storm-gradient': 'linear-gradient(135deg, #1e1b2e 0%, #15171f 100%)',
+                        'glass-gradient': 'linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for glassmorphism feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2); 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3); 
+        }
+
+        /* Lightning Animation */
+        @keyframes flash {
+            0%, 100% { opacity: 1; text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
+            50% { opacity: 0.6; text-shadow: 0 0 0px rgba(255, 255, 255, 0); }
+            55% { opacity: 1; text-shadow: 0 0 20px rgba(255, 255, 255, 0.8); }
+            56% { opacity: 0.8; }
+            57% { opacity: 1; text-shadow: 0 0 15px rgba(255, 255, 255, 0.6); }
+        }
+        .animate-lightning {
+            animation: flash 4s infinite ease-in-out;
+        }
+        
+        /* Subtle background pulse */
+        @keyframes bg-pulse {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .animated-bg {
+            background-size: 200% 200%;
+            animation: bg-pulse 15s ease infinite;
+        }
+    </style>
+</head>
+<body class="bg-storm-gradient animated-bg text-slate-100 font-display min-h-screen overflow-hidden selection:bg-primary selection:text-white">
+<div class="flex h-screen w-full relative">
+<!-- Abstract Background Elements (Lightning Effects) -->
+<div class="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
+<div class="absolute top-[-20%] left-[20%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] mix-blend-screen opacity-30"></div>
+<div class="absolute bottom-[-10%] right-[10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[100px] mix-blend-screen opacity-20"></div>
+<!-- Lightning streak hint -->
+<div class="absolute top-[10%] right-[30%] w-[2px] h-[300px] bg-white/10 -rotate-12 blur-[1px]"></div>
+</div>
+<!-- Sidebar Navigation -->
+<nav class="relative z-10 w-24 lg:w-72 flex-shrink-0 flex flex-col justify-between border-r border-glass-border bg-glass-surface backdrop-blur-xl transition-all duration-300">
+<div class="flex flex-col gap-8 p-6">
+<!-- Logo -->
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-white text-2xl">thunderstorm</span>
+</div>
+<div class="hidden lg:flex flex-col">
+<h1 class="text-lg font-bold tracking-tight">StormWatch</h1>
+<span class="text-xs text-slate-400 font-medium tracking-wider uppercase">Premium</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl bg-primary/20 border border-primary/30 text-white shadow-lg shadow-primary/5 group transition-all" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">dashboard</span>
+<span class="hidden lg:block font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">map</span>
+<span class="hidden lg:block font-medium">Map</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">location_on</span>
+<span class="hidden lg:block font-medium">Locations</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">calendar_month</span>
+<span class="hidden lg:block font-medium">Calendar</span>
+</a>
+</div>
+</div>
+<!-- Bottom Actions -->
+<div class="flex flex-col gap-2 p-6">
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:rotate-90 transition-transform">settings</span>
+<span class="hidden lg:block font-medium">Settings</span>
+</a>
+<div class="mt-4 pt-6 border-t border-glass-border flex items-center gap-3">
+<div class="relative">
+<img alt="User avatar profile picture" class="w-10 h-10 rounded-full object-cover border-2 border-primary/50" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzCAerBakHqcuyRQuaMyc4K87glmXhSYqX7fCnjZ9Ki-BrKMFO7IAEEen_d94gy6J87lp_AR0BTtUyxN_4x0WXIQvr5ydDZCxl4_yQlgfhPE-PZg9dAZXwHVOjpykO9a4k-QqtR_dwzS6Y57YnvSuRpMWW10j7flIwbF7gfYHWNoKshzerJFejEcruN67qW-lcjKCOvMWu1SqMA_zAWSpwEFL3WgYIOoAcIqZh9xasoaS87Bij1Y37gua8Sjf9-oTTuB_OvD26_Lkr"/>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#1a1c24] rounded-full"></div>
+</div>
+<div class="hidden lg:flex flex-col">
+<span class="text-sm font-semibold text-white">Alex Morgan</span>
+<span class="text-xs text-slate-400">Pro Member</span>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="relative z-10 flex-1 flex flex-col min-w-0 overflow-hidden">
+<!-- Header -->
+<header class="flex items-center justify-between px-8 py-6">
+<div class="flex flex-col">
+<h2 class="text-2xl font-bold text-white tracking-tight">Today's Overview</h2>
+<p class="text-slate-400 text-sm">Monday, 12 Oct • 10:42 AM</p>
+</div>
+<div class="flex items-center gap-6">
+<!-- Search Bar -->
+<div class="hidden md:flex items-center bg-glass-surface backdrop-blur-md border border-glass-border rounded-xl px-4 py-2.5 w-80 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50 transition-all">
+<span class="material-symbols-outlined text-slate-400">search</span>
+<input class="bg-transparent border-none text-white placeholder-slate-400 text-sm focus:ring-0 w-full ml-2" placeholder="Search city..." type="text"/>
+</div>
+<!-- Notification Bell -->
+<button class="relative p-2.5 rounded-xl bg-glass-surface border border-glass-border hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-slate-300">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+</button>
+</div>
+</header>
+<!-- Dashboard Content Scrollable -->
+<div class="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar">
+<!-- Masonry Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-min">
+<!-- Hero Card (Spans 2 cols, 2 rows on lg) -->
+<div class="col-span-1 md:col-span-3 lg:col-span-2 row-span-2 relative group overflow-hidden rounded-2xl border border-glass-border bg-glass-gradient backdrop-blur-md shadow-2xl">
+<!-- Dynamic Background Image/Gradient -->
+<div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-purple-900/20 z-0"></div>
+<img alt="Stormy weather background" class="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay" data-alt="Dark stormy clouds with lightning" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1cDrRYDiHuI9mcJ6rbOduqUGGa3cbrYbJfRMhL2LZJX2Sk8zpuOv55aSCjC2ahP7P5-el-lb3JL7dyFRTL5q8urQWmIjfe0E5H3DYrsNskn24WQItuJPiJC88pUz6Zwb9IyDNYX3y4ObVtSfnciKuCi8U8qx9AhD1A0lUwaPfs3n_QotVgDTYq8yk32nwYquNjV9tdfmZNoReKXiJX2-f3CF8Yh1LRU_RdJpf7eV__dgML1dK51Vmg0j2ecPGMGaCK62Sb-slYA9h"/>
+<div class="relative z-10 p-8 h-full flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-white text-lg">location_on</span>
+<span class="text-xl font-bold tracking-wide">Seattle, WA</span>
+</div>
+<span class="px-3 py-1 rounded-full bg-white/10 text-xs font-medium text-white backdrop-blur-sm border border-white/5">Current Location</span>
+</div>
+<div class="text-right">
+<span class="material-symbols-outlined text-yellow-300 text-6xl animate-lightning drop-shadow-[0_0_15px_rgba(253,224,71,0.5)]">thunderstorm</span>
+</div>
+</div>
+<div class="mt-8">
+<div class="flex items-baseline gap-4">
+<h1 class="text-8xl font-black text-white tracking-tighter drop-shadow-lg">16°</h1>
+<div class="flex flex-col">
+<span class="text-2xl font-medium text-slate-200">Thunderstorm</span>
+<span class="text-slate-400">Feels like 13°</span>
+</div>
+</div>
+<p class="mt-4 text-slate-300 max-w-md text-sm leading-relaxed border-l-2 border-primary pl-3">
+                                    Severe thunderstorm warning in effect until 2:00 PM. Heavy rain and gusty winds expected.
+                                </p>
+</div>
+</div>
+</div>
+<!-- Air Quality (Square) -->
+<div class="col-span-1 md:col-span-1 rounded-2xl border border-glass-border bg-glass-surface backdrop-blur-md p-6 flex flex-col items-center justify-center relative overflow-hidden group hover:bg-white/5 transition-all">
+<div class="absolute top-0 right-0 p-4">
+<span class="material-symbols-outlined text-slate-500 text-xl">air</span>
+</div>
+<h3 class="w-full text-left text-sm font-medium text-slate-400 uppercase tracking-wider mb-4">Air Quality</h3>
+<div class="relative w-32 h-32 flex items-center justify-center">
+<!-- SVG Gauge -->
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 100 100">
+<circle class="text-white/10" cx="50" cy="50" fill="transparent" r="40" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]" cx="50" cy="50" fill="transparent" r="40" stroke="currentColor" stroke-dasharray="251.2" stroke-dashoffset="60" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute flex flex-col items-center">
+<span class="text-3xl font-bold text-white">45</span>
+<span class="text-[10px] text-slate-400 uppercase">AQI</span>
+</div>
+</div>
+<p class="mt-4 text-green-400 font-semibold bg-green-400/10 px-3 py-1 rounded-lg text-sm">Satisfactory</p>
+</div>
+<!-- Map Preview (Square) -->
+<div class="col-span-1 md:col-span-2 lg:col-span-1 rounded-2xl border border-glass-border bg-glass-surface backdrop-blur-md relative overflow-hidden group">
+<img alt="Map view" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" data-alt="Dark stylized map view of city streets" data-location="Seattle Map" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5pA4ScsyDqIlekuPkaOT7kt_BHbgfQVCgrBC-q2uOTBLciDBtQ4K2M2bJAdKHcY_ixHCxuQcM6RKG1uInw8bL3ZGCPP9hO3anQlozhaXeSfKw8t-IFxTVoyGxgb9m5MVSLGHraO_tUfaeFUmFJ6EHftaoqXGN5H2M9b5kIc8DLL6FnkYzXgXPz35rrSSkbE0Ds5UBaiYinySIpy9FjHfZNnmcNEXFVqeJCC2rcvMqurNaj-rZMPd_4jsfy2rOqqO0pwbvUIx5Qqjk"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark/90 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<div class="flex justify-between items-end">
+<div>
+<h3 class="text-white font-bold text-lg">Radar</h3>
+<p class="text-xs text-slate-300">Precipitation: 90%</p>
+</div>
+<button class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary/80 transition-colors">
+<span class="material-symbols-outlined text-sm">open_in_full</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Hourly Forecast (Wide Strip) -->
+<div class="col-span-1 md:col-span-3 lg:col-span-4 rounded-2xl border border-glass-border bg-glass-surface backdrop-blur-md p-6">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-sm font-medium text-slate-400 uppercase tracking-wider">Hourly Forecast</h3>
+<div class="flex gap-2">
+<button class="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="flex overflow-x-auto gap-4 pb-2 no-scrollbar">
+<!-- Now Card (Active) -->
+<div class="flex-shrink-0 w-24 flex flex-col items-center gap-3 p-4 rounded-xl bg-primary/20 border border-primary/40 shadow-[0_0_15px_rgba(43,108,238,0.15)]">
+<span class="text-sm font-semibold text-white">Now</span>
+<span class="material-symbols-outlined text-yellow-300 drop-shadow-[0_0_8px_rgba(253,224,71,0.6)]">thunderstorm</span>
+<span class="text-lg font-bold">16°</span>
+<div class="flex items-center gap-1 text-xs text-blue-300 font-medium">
+<span class="material-symbols-outlined text-[10px]">water_drop</span> 95%
+                                </div>
+</div>
+<!-- Future Hours -->
+<div class="flex-shrink-0 w-24 flex flex-col items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+<span class="text-sm text-slate-400">1 PM</span>
+<span class="material-symbols-outlined text-slate-300">rainy</span>
+<span class="text-lg font-bold">15°</span>
+<div class="flex items-center gap-1 text-xs text-slate-400">
+<span class="material-symbols-outlined text-[10px]">water_drop</span> 80%
+                                </div>
+</div>
+<div class="flex-shrink-0 w-24 flex flex-col items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+<span class="text-sm text-slate-400">2 PM</span>
+<span class="material-symbols-outlined text-slate-300">cloudy</span>
+<span class="text-lg font-bold">15°</span>
+<div class="flex items-center gap-1 text-xs text-slate-400">
+<span class="material-symbols-outlined text-[10px]">water_drop</span> 40%
+                                </div>
+</div>
+<div class="flex-shrink-0 w-24 flex flex-col items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+<span class="text-sm text-slate-400">3 PM</span>
+<span class="material-symbols-outlined text-slate-300">partly_cloudy_day</span>
+<span class="text-lg font-bold">16°</span>
+<div class="flex items-center gap-1 text-xs text-slate-400">
+<span class="material-symbols-outlined text-[10px]">water_drop</span> 10%
+                                </div>
+</div>
+<div class="flex-shrink-0 w-24 flex flex-col items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+<span class="text-sm text-slate-400">4 PM</span>
+<span class="material-symbols-outlined text-slate-300">sunny</span>
+<span class="text-lg font-bold">17°</span>
+<div class="flex items-center gap-1 text-xs text-slate-400">
+<span class="material-symbols-outlined text-[10px]">water_drop</span> 0%
+                                </div>
+</div>
+<div class="flex-shrink-0 w-24 flex flex-col items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+<span class="text-sm text-slate-400">5 PM</span>
+<span class="material-symbols-outlined text-slate-300">sunny</span>
+<span class="text-lg font-bold">16°</span>
+<div class="flex items-center gap-1 text-xs text-slate-400">
+<span class="material-symbols-outlined text-[10px]">water_drop</span> 0%
+                                </div>
+</div>
+</div>
+</div>
+<!-- Utility Tiles Row -->
+<!-- Wind -->
+<div class="col-span-1 rounded-2xl border border-glass-border bg-glass-surface backdrop-blur-md p-6 flex flex-col justify-between hover:bg-white/5 transition-all group">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-blue-500/20 rounded-lg text-blue-400">
+<span class="material-symbols-outlined">air</span>
+</div>
+<span class="text-xs text-slate-500 font-bold">SW</span>
+</div>
+<div class="mt-4">
+<span class="text-sm text-slate-400 font-medium uppercase tracking-wider">Wind</span>
+<div class="flex items-baseline gap-1 mt-1">
+<span class="text-2xl font-bold text-white group-hover:text-blue-300 transition-colors">25</span>
+<span class="text-sm text-slate-400">km/h</span>
+</div>
+</div>
+</div>
+<!-- Pressure -->
+<div class="col-span-1 rounded-2xl border border-glass-border bg-glass-surface backdrop-blur-md p-6 flex flex-col justify-between hover:bg-white/5 transition-all group">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-purple-500/20 rounded-lg text-purple-400">
+<span class="material-symbols-outlined">compress</span>
+</div>
+</div>
+<div class="mt-4">
+<span class="text-sm text-slate-400 font-medium uppercase tracking-wider">Pressure</span>
+<div class="flex items-baseline gap-1 mt-1">
+<span class="text-2xl font-bold text-white group-hover:text-purple-300 transition-colors">1012</span>
+<span class="text-sm text-slate-400">hPa</span>
+</div>
+</div>
+</div>
+<!-- Humidity -->
+<div class="col-span-1 rounded-2xl border border-glass-border bg-glass-surface backdrop-blur-md p-6 flex flex-col justify-between hover:bg-white/5 transition-all group">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-cyan-500/20 rounded-lg text-cyan-400">
+<span class="material-symbols-outlined">humidity_percentage</span>
+</div>
+</div>
+<div class="mt-4">
+<span class="text-sm text-slate-400 font-medium uppercase tracking-wider">Humidity</span>
+<div class="flex items-baseline gap-1 mt-1">
+<span class="text-2xl font-bold text-white group-hover:text-cyan-300 transition-colors">82</span>
+<span class="text-sm text-slate-400">%</span>
+</div>
+</div>
+</div>
+<!-- Visibility (Extra for filling grid) -->
+<div class="col-span-1 rounded-2xl border border-glass-border bg-glass-surface backdrop-blur-md p-6 flex flex-col justify-between hover:bg-white/5 transition-all group">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-amber-500/20 rounded-lg text-amber-400">
+<span class="material-symbols-outlined">visibility</span>
+</div>
+</div>
+<div class="mt-4">
+<span class="text-sm text-slate-400 font-medium uppercase tracking-wider">Visibility</span>
+<div class="flex items-baseline gap-1 mt-1">
+<span class="text-2xl font-bold text-white group-hover:text-amber-300 transition-colors">4.2</span>
+<span class="text-sm text-slate-400">km</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
