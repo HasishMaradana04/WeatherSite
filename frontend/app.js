@@ -1,5 +1,5 @@
 /* ─── Atmos Weather — Shared Utilities ─── */
-const API = 'http://127.0.0.1:8001/api';
+const API = '/api';
 const $ = (id) => document.getElementById(id);
 let metric = true;
 

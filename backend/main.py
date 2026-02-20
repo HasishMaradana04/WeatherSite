@@ -2,9 +2,11 @@ from datetime import date, datetime
 from io import StringIO
 import csv
 
+import os
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from database import Base, engine, SessionLocal
@@ -194,3 +196,8 @@ def map_link(location: str):
 @app.get("/api/integrations/youtube")
 def youtube_link(location: str):
     return {"youtube_url": f"https://www.youtube.com/results?search_query={location}+travel+guide"}
+
+# Mount the static frontend files onto the root "/"
+# Important: this must come AFTER all /api routes!
+frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend")
+app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
